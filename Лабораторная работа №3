@@ -1,0 +1,69 @@
+import numpy as np
+import random
+
+def generate_matrix(n, low=-10, high=10):
+    return np.random.randint(low, high+1, (n, n))
+
+def split_matrix(A):
+    n = A.shape[0] // 2
+    D = A[:n, :n]
+    E = A[:n, n:]
+    C = A[n:, :n]
+    B = A[n:, n:]
+    return B, C, D, E
+
+def sum_greater_than_k(matrix, k):
+    n = matrix.shape[0]
+    return sum(matrix[i, j] for i in range(n) for j in range(n) if j % 2 == 0 and matrix[i, j] > k)
+
+def product_perimeter(matrix):
+    n = matrix.shape[0]
+    perimeter_elements = [matrix[0, j] for j in range(n)] + \
+                         [matrix[n-1, j] for j in range(n)] + \
+                         [matrix[i, 0] for i in range(1, n-1)] + \
+                         [matrix[i, n-1] for i in range(1, n-1)]
+    product = 1
+    for elem in perimeter_elements:
+        product *= elem
+    return product
+
+def swap_symmetric(matrix):
+    n = matrix.shape[0]
+    matrix_copy = matrix.copy()
+    for i in range(n):
+        for j in range(i+1, n):
+            matrix[i, j], matrix[j, i] = matrix[j, i], matrix[i, j]
+    return matrix_copy
+
+def swap_non_symmetric(C, B):
+    return B.copy(), C.copy()
+
+def form_matrix_F(A, K):
+    B, C, D, E = split_matrix(A)
+    if sum_greater_than_k(E, K) > product_perimeter(E):
+        E_swapped = swap_symmetric(E)
+        F = np.block([[D, E_swapped], [C, B]])
+    else:
+        B_new, C_new = swap_non_symmetric(C, B)
+        F = np.block([[D, E], [C_new, B_new]])
+    return F
+
+def main():
+    K = int(input("Введите число K: "))
+    N = int(input("Введите размер матрицы N: "))
+
+    if N % 2 != 0:
+        print("Размер матрицы N должен быть четным.")
+        return
+
+    A = generate_matrix(N)
+    print("Матрица A:\n", A)
+
+    F = form_matrix_F(A, K)
+    print("Матрица F:\n", F)
+
+    result = ((K * A) @ F) + (K * F.T)
+    print("Результат ((K * A) * F) + (K * F^T):\n", result)
+
+if __name__ == "__main__":
+    main()
