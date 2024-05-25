@@ -1,0 +1,32 @@
+import re
+
+def check_odd(num):
+    odd_count = 0
+    for digit in str(num):
+        if int(digit) % 2 != 0:
+            odd_count += 1
+    return odd_count
+
+def start_with_odd(num):
+    first_digit = int(str(num)[0])
+    return first_digit % 2 != 0
+
+def main(input_filename):
+    with open(input_filename, 'r') as file:
+        content = file.read()
+
+    # Использование регулярного выражения для поиска всех чисел в тексте
+    numbers = re.findall(r'\b\d+\b', content)
+    numbers = [int(num) for num in numbers]
+
+    for i in numbers:
+        # Проверка числа в соответствии с условиями
+        if start_with_odd(i) and check_odd(i) <= 3:
+            first_digit = str(i)[0]
+            odd_digits = ''.join(digit for digit in str(i)[1:] if int(digit) % 2 != 0)
+            print(f"{first_digit}-{odd_digits}")
+
+if __name__ == "__main__":
+    # Замените 'input.txt' на путь к вашему входному файлу
+    input_filename = 'input.txt'
+    main(input_filename)
