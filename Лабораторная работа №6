@@ -1,0 +1,55 @@
+import time
+import itertools
+
+def is_valid_lexeme(lexeme, valid_start):
+    """
+    Проверка, начинается ли лексема с допустимой согласной буквы.
+    """
+    return lexeme[0] in valid_start
+
+def generate_lexemes_algorithmic(word):
+    """
+    Алгоритмическое формирование всех уникальных лексем из слова.
+    """
+    lexemes = set()
+    def permute(prefix, remaining):
+        if not remaining:
+            lexemes.add(prefix)
+        for i in range(len(remaining)):
+            permute(prefix + remaining[i], remaining[:i] + remaining[i+1:])
+    
+    permute("", word)
+    return lexemes
+
+def generate_lexemes_python(word):
+    """
+    Формирование всех уникальных лексем из слова с использованием itertools.
+    """
+    return set(''.join(p) for p in itertools.permutations(word))
+
+def main():
+    word = "компьютер"
+    valid_start = "бвгджзйклмнпрстфхцчшщ"
+
+    # Алгоритмическое формирование лексем
+    start_time = time.time()
+    algorithmic_lexemes = generate_lexemes_algorithmic(word)
+    algorithmic_lexemes = {lexeme for lexeme in algorithmic_lexemes if is_valid_lexeme(lexeme, valid_start)}
+    algorithmic_time = time.time() - start_time
+
+    # Формирование лексем с использованием функций Python
+    start_time = time.time()
+    python_lexemes = generate_lexemes_python(word)
+    python_lexemes = {lexeme for lexeme in python_lexemes if is_valid_lexeme(lexeme, valid_start)}
+    python_time = time.time() - start_time
+
+    # Вывод результатов
+    print(f"Алгоритмический подход: {len(algorithmic_lexemes)} лексем, время выполнения: {algorithmic_time:.4f} секунд")
+    print(f"Функции Python: {len(python_lexemes)} лексем, время выполнения: {python_time:.4f} секунд")
+
+    # Пример лексем
+    print("\nПример лексем (алгоритмический подход):", list(algorithmic_lexemes)[:10])
+    print("Пример лексем (функции Python):", list(python_lexemes)[:10])
+
+if __name__ == "__main__":
+    main()
