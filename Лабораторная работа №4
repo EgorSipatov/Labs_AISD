@@ -1,0 +1,84 @@
+import numpy as np
+
+def generate_matrix(n):
+    # Генерация матрицы для отладки
+    A = np.array([[ 1,  2,  3,  4],
+                  [ 5,  6,  7,  8],
+                  [ 9, 10, 11, 12],
+                  [13, 14, 15, 16]])
+    return A
+
+def split_matrix(A):
+    n = A.shape[0] // 2
+    D = A[:n, :n]
+    E = A[:n, n:]
+    C = A[n:, :n]
+    B = A[n:, n:]
+    return B, C, D, E
+
+def sum_greater_than_k_in_odd_columns(matrix, k):
+    n = matrix.shape[0]
+    return sum(matrix[i, j] for i in range(n) for j in range(1, n, 2) if matrix[i, j] > k)
+
+def product_of_perimeter(matrix):
+    n = matrix.shape[0]
+    perimeter_elements = list(matrix[0, :]) + list(matrix[n-1, :]) + list(matrix[1:n-1, 0]) + list(matrix[1:n-1, n-1])
+    product = 1
+    for elem in perimeter_elements:
+        product *= elem
+    return product
+
+def swap_symmetric(matrix1, matrix2):
+    matrix1_copy = matrix1.copy()
+    matrix2_copy = matrix2.copy()
+    for i in range(matrix1.shape[0]):
+        for j in range(i, matrix1.shape[0]):
+            matrix1_copy[i, j], matrix2_copy[i, j] = matrix2_copy[i, j], matrix1_copy[i, j]
+    return matrix1_copy, matrix2_copy
+
+def swap_non_symmetric(matrix1, matrix2):
+    return matrix2.copy(), matrix1.copy()
+
+def form_matrix_F(A, K):
+    B, C, D, E = split_matrix(A)
+    if sum_greater_than_k_in_odd_columns(E, K) > product_of_perimeter(E):
+        C_swapped, E_swapped = swap_symmetric(C, E)
+        F = np.block([[D, E_swapped], [C_swapped, B]])
+    else:
+        B_new, C_new = swap_non_symmetric(C, B)
+        F = np.block([[D, E], [C_new, B_new]])
+    return F
+
+def main():
+    K = int(input("Введите число K: "))
+    N = int(input("Введите размер матрицы N: "))
+
+    if N % 2 != 0 or N <= 0:
+        print("Размер матрицы N должен быть положительным и четным.")
+        return
+
+    A = generate_matrix(N)
+    print("Матрица A:\n", A)
+
+    F = form_matrix_F(A, K)
+    print("Матрица F:\n", F)
+
+    det_A = np.linalg.det(A)
+    diag_sum_F = np.trace(F)
+    print(f"Определитель A: {det_A}")
+    print(f"Сумма диагональных элементов F: {diag_sum_F}")
+
+    if det_A > diag_sum_F:
+        A_inv = np.linalg.inv(A)
+        F_inv = np.linalg.inv(F)
+        result = (A @ A_inv) - (K * F_inv)
+    else:
+        A_T = A.T
+        G = np.tril(A)
+        F_T = F.T
+        result = (A_T + G - F_T) * K
+
+    print("Результат выражения:\n", result)
+
+if __name__ == "__main__":
+    main()
