@@ -1,0 +1,80 @@
+import time
+import math
+import matplotlib.pyplot as plt
+
+# Рекурсивные функции
+def recursive_F(n):
+    if n == 1:
+        return 1
+    else:
+        return (-1)**n * (recursive_F(n-1) - recursive_G(n-2) / math.factorial(n+5))
+
+def recursive_G(n):
+    if n == 1:
+        return 1
+    else:
+        return recursive_F(n-1) + 2 * recursive_G(n-1)
+
+# Итерационные функции
+def iterative_F_G(n):
+    F = [0] * (n + 1)
+    G = [0] * (n + 1)
+    F[1] = 1
+    G[1] = 1
+
+    for i in range(2, n + 1):
+        if i > 2:
+            F[i] = (-1)**i * (F[i-1] - G[i-2] / math.factorial(i+5))
+        else:
+            F[i] = (-1)**i * (F[i-1])
+        G[i] = F[i-1] + 2 * G[i-1]
+
+    return F[n], G[n]
+
+# Сравнение времени выполнения
+def compare_times(max_n):
+    recursive_times = []
+    iterative_times = []
+
+    for n in range(1, max_n + 1):
+        start_time = time.time()
+        try:
+            recursive_F(n)
+            recursive_G(n)
+            recursive_times.append(time.time() - start_time)
+        except RecursionError:
+            recursive_times.append(None)
+
+        start_time = time.time()
+        iterative_F_G(n)
+        iterative_times.append(time.time() - start_time)
+
+    return recursive_times, iterative_times
+
+def plot_times(max_n, recursive_times, iterative_times):
+    n_values = list(range(1, max_n + 1))
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(n_values, iterative_times, label="Iterative", marker='o')
+    plt.plot(n_values, [t for t in recursive_times if t is not None], label="Recursive", marker='x')
+    plt.xlabel("n")
+    plt.ylabel("Time (seconds)")
+    plt.title("Comparison of Recursive and Iterative Function Execution Times")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+def main():
+    max_n = int(input("Введите максимальное значение n для сравнения: "))
+
+    recursive_times, iterative_times = compare_times(max_n)
+
+    print("Результаты:")
+    print("n\tRecursive Time\tIterative Time")
+    for i in range(max_n):
+        print(f"{i+1}\t{recursive_times[i]}\t{iterative_times[i]}")
+
+    plot_times(max_n, recursive_times, iterative_times)
+
+if __name__ == "__main__":
+    main()
