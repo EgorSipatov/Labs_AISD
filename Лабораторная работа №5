@@ -1,80 +1,88 @@
-import time
-import math
+Лабораторная работа №5
+Задана рекуррентная функция. Область определения функции – натуральные числа.
+Написать программу сравнительного вычисления данной функции рекурсивно и итерационно.
+Определить границы применимости рекурсивного и итерационного подхода.
+Результаты сравнительного исследования времени вычисления представить в табличной
+и графической форме в виде отчета по лабораторной работе.
+Вариант 23. F(1) = 1;
+G(1) = 1;
+F(n) = (-1)n*(F(n–1) – G(n–2) /(n+5)!,
+G(n) = F(n–1) + 2*G(n–1), при n >=2
+'''
+
+import timeit
 import matplotlib.pyplot as plt
 
-# Рекурсивные функции
-def recursive_F(n):
+
+
+def dynamic_factorial(n):
+    global last_factorial
+    last_factorial = n * last_factorial
+    return last_factorial
+
+def recursive_factorial(n):
     if n == 1:
         return 1
     else:
-        return (-1)**n * (recursive_F(n-1) - recursive_G(n-2) / math.factorial(n+5))
+        return n * recursive_factorial(n-1)
 
-def recursive_G(n):
+
+def iterative_factorial(n):
+    result = 1
+    for i in range(2, n+1):
+        result *= i
+    return result
+
+
+# G
+def dynamic_G(n):
+    global last_G_value, last_F_value
     if n == 1:
         return 1
     else:
-        return recursive_F(n-1) + 2 * recursive_G(n-1)
+        last_G_value = dynamic_F(n-1) + 2 * dynamic_G(n-1)
+        return last_G_value
 
-# Итерационные функции
-def iterative_F_G(n):
-    F = [0] * (n + 1)
-    G = [0] * (n + 1)
-    F[1] = 1
-    G[1] = 1
+# F
+def dynamic_F(n):
+    global last_G_value, last_F_value
+    if n == 1:
+        return 1
+    else:
+        global step
+        step *= -1
+        last_F_value = step * (dynamic_F(n-1) - dynamic_G(n-2)) / dynamic_factorial(n+5) # // ?
+        return last_F_value
 
-    for i in range(2, n + 1):
-        if i > 2:
-            F[i] = (-1)**i * (F[i-1] - G[i-2] / math.factorial(i+5))
-        else:
-            F[i] = (-1)**i * (F[i-1])
-        G[i] = F[i-1] + 2 * G[i-1]
+# Время time.time
+def score_time(func, n):
+    return timeit.timeit(lambda: func(n), number=1000)
 
-    return F[n], G[n]
+# Значения
+last_factorial = 1
+last_G_value = 1
+last_F_value = 1
+n_values = range(2, 100)
+recursive_times = []
+iterative_times = []
+step = 1
 
-# Сравнение времени выполнения
-def compare_times(max_n):
-    recursive_times = []
-    iterative_times = []
 
-    for n in range(1, max_n + 1):
-        start_time = time.time()
-        try:
-            recursive_F(n)
-            recursive_G(n)
-            recursive_times.append(time.time() - start_time)
-        except RecursionError:
-            recursive_times.append(None)
+for n in n_values:
+    recursive_times.append(score_time(recursive_factorial, n))
+    iterative_times.append(score_time(iterative_factorial, n))
 
-        start_time = time.time()
-        iterative_F_G(n)
-        iterative_times.append(time.time() - start_time)
 
-    return recursive_times, iterative_times
+# Табличка
+print(f"{'n':<10}{'Рекурсивное время (мс)':<25}{'Итерационное время (мс)':<25}")
+for i, n in enumerate(n_values):
+    print(f"{n:<10}{recursive_times[i]:<25}{iterative_times[i]:<25}")
 
-def plot_times(max_n, recursive_times, iterative_times):
-    n_values = list(range(1, max_n + 1))
-
-    plt.figure(figsize=(10, 6))
-    plt.plot(n_values, iterative_times, label="Iterative", marker='o')
-    plt.plot(n_values, [t for t in recursive_times if t is not None], label="Recursive", marker='x')
-    plt.xlabel("n")
-    plt.ylabel("Time (seconds)")
-    plt.title("Comparison of Recursive and Iterative Function Execution Times")
-    plt.legend()
-    plt.grid(True)
-    plt.show()
-
-def main():
-    max_n = int(input("Введите максимальное значение n для сравнения: "))
-
-    recursive_times, iterative_times = compare_times(max_n)
-
-    print("Результаты:")
-    print("n\tRecursive Time\tIterative Time")
-    for i in range(max_n):
-        print(f"{i+1}\t{recursive_times[i]}\t{iterative_times[i]}")
-
-    plot_times(max_n, recursive_times, iterative_times)
-
-if __name__ == "__main__":
-    main()
+# График
+plt.plot(n_values, recursive_times, label='Рекурсивно')
+plt.plot(n_values, iterative_times, label='Итерационно')
+plt.xlabel('n')
+plt.ylabel('Время (в миллисекундах)')
+plt.legend()
+plt.title('Сравнение времени вычисления функции F(n)')
+plt.show()
