@@ -1,33 +1,48 @@
-# определяем функцию check_odd для подсчета количества нечетных цифр в числе
-def check_odd(num):
-    odd_count = 0
-    # проходим по каждой цифре числа и увеличиваем odd_count, если цифра нечетная
-    for digit in str(num):
-        if int(digit) % 2 != 0:
-            odd_count += 1
-    return odd_count
+def checkNum(str_num):
+    if "-" in str_num or str_num == "":
+        return False
+    else:
+        if int(str_num[0]) % 2 == 0 or int(str_num[-1]) % 2 != 0:
+            return False
+    flag = True
+    count = 0
+    for i in range(0, len(str_num)):
+        if int(str_num[i]) % 2 != 0:
+            count = count + 1
+    if count > 3:
+        return False
+    return flag
 
-# определяем функцию start_with_odd для проверки, начинается ли число с нечетной цифры
-def start_with_odd(num):
-    # получаем первую цифру числа
-    first_digit = int(str(num)[0])
-    # проверяем, является ли первая цифра нечетной
-    return first_digit % 2 != 0
 
-# основная функция программы
-def main():
-    # итерируемся по числам от 101 до 999 с шагом 2, чтобы получить только четные числа
-    for i in range(101, 1000, 2):
-        # проверяем условия: число начинается с нечетной цифры и содержит не более 3 нечетных цифр
-        if start_with_odd(i) and check_odd(i) <= 3:
-            # получаем первую цифру числа
-            first_digit = str(i)[0]
-            # получаем все нечетные цифры числа
-            odd_digits = ''.join(digit for digit in str(i)[1:] if int(digit) % 2 != 0)
-            # печатаем первую цифру и нечетные цифры через тире
-            print(f"{first_digit}-{odd_digits}")
+nums = []
+file_name = "lab1.txt"
+perev_cifr = {'0': 'ноль', '1': 'один', '2': 'два', '3': 'три',
+              '4': 'четыре', '5': 'пять', '6': 'шесть',
+              '7': 'семь', '8': 'восемь', '9': 'девять'}
+try:
+    open(file_name, "r")
+except:
+    print("Файл отсутствует!")
 
-# проверяем, запускается ли программа как отдельный скрипт
-if name == "main":
-    main()
-
+with open(file_name, "r") as file:
+    while True:
+        line = file.readline().replace('\n', '')
+        if not (line): break
+        if (line.replace(" ", "")).isalpha() == False and (line.replace(" ", "")).isdigit() == False: continue
+        num = ""
+        if line.isdigit() and checkNum(line):
+            nums.append(line)
+        else:
+            for index in range(0, len(line)):
+                if line[index].isdigit():
+                    num += line[index]
+                if not (line[index].isdigit()) or index == (len(line) - 1):
+                    if checkNum(num): nums.append(num)
+                    num = ""
+for num in nums:
+    accept_char = []
+    accept_char.append(num[0])
+    for char in num:
+        if int(char) % 2 != 0:
+            accept_char.append(char)
+    print(f"Число {num}:", " - ".join(list(map(lambda x: perev_cifr[x], accept_char))))
