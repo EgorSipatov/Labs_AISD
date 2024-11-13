@@ -1,32 +1,36 @@
+Лабораторная работа №2
+Написать программу, решающую задачу из 1 лабораторной работы (в соответствии со своим вариантом) со следующими изменениями:
+1.  Входной файл является обыкновенным (т.е. нет требования на «бесконечность» файла);
+2.  Распознавание и обработку делать  через регулярные выражения;
+3.  В вариантах, где есть параметр (например К), допускается его заменить на любое число;
+4.  Все остальные требования соответствуют варианту задания лабораторной работы №1.
+Вариант 23.
+Натуральные четные числа, начинающиеся с нечетной цифры и содержащие не более 3 нечетных цифр.
+Для каждого числа через тире вывести прописью первую цифру и нечетные цифры.
+"""
 import re
 
-def check_odd(num):
-    odd_count = 0
-    for digit in str(num):
-        if int(digit) % 2 != 0:
-            odd_count += 1
-    return odd_count
 
-def start_with_odd(num):
-    first_digit = int(str(num)[0])
-    return first_digit % 2 != 0
+# Функция для перевода цифр в слова
+def digit_to_word(digit):
+    words = ["ноль", "один", "два", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять"]
+    return words[int(digit)]
 
-def main(input_filename):
-    with open(input_filename, 'r') as file:
-        content = file.read()
 
-    # Использование регулярного выражения для поиска всех чисел в тексте
-    numbers = re.findall(r'\b\d+\b', content)
-    numbers = [int(num) for num in numbers]
+def process_numbers(filename):
+    with open(filename, 'r') as file:
+        numbers = file.readlines()
 
-    for i in numbers:
-        # Проверка числа в соответствии с условиями
-        if start_with_odd(i) and check_odd(i) <= 3:
-            first_digit = str(i)[0]
-            odd_digits = ''.join(digit for digit in str(i)[1:] if int(digit) % 2 != 0)
-            print(f"{first_digit}-{odd_digits}")
+    pattern = re.compile(r'^[13579]\d*[02468]$')
+
+    for number in numbers:
+        number = number.strip()
+
+        if pattern.match(number) and len(re.findall(r'[13579]', number)) <= 3:
+            odd_digits = re.findall(r'[13579]', number)
+            first_digit = str(digit_to_word(number[0]))
+            odd_digits_words = " - ".join(digit_to_word(digit) for digit in odd_digits)
+            print(f"Число {number}: {first_digit} - {odd_digits_words}")
 
 if __name__ == "__main__":
-    # Замените 'input.txt' на путь к вашему входному файлу
-    input_filename = 'input.txt'
-    main(input_filename)
+    process_numbers('lab1.txt')
