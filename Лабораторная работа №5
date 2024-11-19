@@ -1,3 +1,4 @@
+'''
 Лабораторная работа №5
 Задана рекуррентная функция. Область определения функции – натуральные числа.
 Написать программу сравнительного вычисления данной функции рекурсивно и итерационно.
@@ -11,11 +12,12 @@ G(n) = F(n–1) + 2*G(n–1), при n >=2
 '''
 
 import timeit
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 
 
 def dynamic_factorial(n):
+    # Динамично накапливаем последнее значение факториала
     global last_factorial
     last_factorial = n * last_factorial
     return last_factorial
@@ -50,22 +52,24 @@ def dynamic_F(n):
         return 1
     else:
         global step
+        # Оптимизируем знак, делаем так, чтобы знак умножался один раз
         step *= -1
-        last_F_value = step * (dynamic_F(n-1) - dynamic_G(n-2)) / dynamic_factorial(n+5) # // ?
+        last_F_value = step * (dynamic_F(n-1) - dynamic_G(n-2)) / dynamic_factorial(n+5)
         return last_F_value
 
 # Время time.time
 def score_time(func, n):
     return timeit.timeit(lambda: func(n), number=1000)
 
-# Значения
+# Переменные
 last_factorial = 1
 last_G_value = 1
 last_F_value = 1
-n_values = range(2, 100)
+n = int(input("Введите число N:"))
+n_values = range(2, n + 1)
 recursive_times = []
 iterative_times = []
-step = 1
+step = -1
 
 
 for n in n_values:
@@ -78,7 +82,7 @@ print(f"{'n':<10}{'Рекурсивное время (мс)':<25}{'Итерац�
 for i, n in enumerate(n_values):
     print(f"{n:<10}{recursive_times[i]:<25}{iterative_times[i]:<25}")
 
-# График
+"""# График
 plt.plot(n_values, recursive_times, label='Рекурсивно')
 plt.plot(n_values, iterative_times, label='Итерационно')
 plt.xlabel('n')
@@ -86,3 +90,4 @@ plt.ylabel('Время (в миллисекундах)')
 plt.legend()
 plt.title('Сравнение времени вычисления функции F(n)')
 plt.show()
+"""
