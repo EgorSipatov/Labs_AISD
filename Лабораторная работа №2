@@ -1,3 +1,4 @@
+"""
 Лабораторная работа №2
 Написать программу, решающую задачу из 1 лабораторной работы (в соответствии со своим вариантом) со следующими изменениями:
 1.  Входной файл является обыкновенным (т.е. нет требования на «бесконечность» файла);
@@ -10,27 +11,43 @@
 """
 import re
 
-
 # Функция для перевода цифр в слова
 def digit_to_word(digit):
     words = ["ноль", "один", "два", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять"]
     return words[int(digit)]
 
-
 def process_numbers(filename):
-    with open(filename, 'r') as file:
-        numbers = file.readlines()
+    try:
+        with open(filename, 'r') as file:
+            # Чтение строк из файла
+            numbers = file.readlines()
 
-    pattern = re.compile(r'^[13579]\d*[02468]$')
+            # Проверка на пустоту файла
+            if not numbers:
+                print("Файл пуст!")
+                return
 
-    for number in numbers:
-        number = number.strip()
+            # Регулярное выражение для нахождения четных чисел, начинающихся с нечетной цифры
+            pattern = re.compile(r'^[13579]\d*[02468]$')
+            # $ - конец строоки
 
-        if pattern.match(number) and len(re.findall(r'[13579]', number)) <= 3:
-            odd_digits = re.findall(r'[13579]', number)
-            first_digit = str(digit_to_word(number[0]))
-            odd_digits_words = " - ".join(digit_to_word(digit) for digit in odd_digits)
-            print(f"Число {number}: {first_digit} - {odd_digits_words}")
+            for line in numbers:
+                line = line.strip()
+                # Разделяем строку на части, чтобы обработать каждую
+                parts = line.split()
+
+                for number in parts:
+                    # Проверка на соответствие шаблону и количеству нечетных цифр
+                    if pattern.match(number) and len(re.findall(r'[13579]', number)) <= 3:
+                        odd_digits = re.findall(r'[13579]', number)
+                        first_digit = digit_to_word(number[0])
+                        odd_digits_words = " - ".join(digit_to_word(digit) for digit in odd_digits)
+                        print(f"Число {number}: {first_digit} - {odd_digits_words}")
+
+    except FileNotFoundError:
+        print("Файл отсутствует!")
+    except Exception as e:
+        print(f"Произошла ошибка: {e}")
 
 if __name__ == "__main__":
     process_numbers('lab1.txt')
