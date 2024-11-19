@@ -1,48 +1,66 @@
+"""
+Лабораторная работа №1
+Написать программу, которая читая символы из бесконечной последовательности (эмулируется конечным файлом, читающимся поблочно),
+распознает, преобразует и выводит на экран лексемы по определенному правилу. Лексемы разделены пробелами.
+Преобразование делать по возможности через словарь. Для упрощения под выводом числа прописью подразумевается последовательный вывод всех цифр числа.
+Регулярные выражения использовать нельзя.
+Вариант 23.
+Натуральные четные числа, начинающиеся с нечетной цифры и содержащие не более 3 нечетных цифр. Для каждого числа через тире вывести прописью первую цифру и нечетные цифры.
+
+"""
 def checkNum(str_num):
+    # Проверка на наличие символа "-" и пустой строки
     if "-" in str_num or str_num == "":
         return False
-    else:
-        if int(str_num[0]) % 2 == 0 or int(str_num[-1]) % 2 != 0:
-            return False
-    flag = True
-    count = 0
-    for i in range(0, len(str_num)):
-        if int(str_num[i]) % 2 != 0:
-            count = count + 1
-    if count > 3:
+    # Проверка на четность первой цифры и нечетность последней
+    if int(str_num[0]) % 2 == 0 or int(str_num[-1]) % 2 != 0:
         return False
-    return flag
+
+    # Подсчет нечетных цифр
+    count = sum(1 for digit in str_num if int(digit) % 2 != 0)
+    return count <= 3  # Не более 3 нечетных цифр
 
 
+# Словарь для преобразования цифр в слова
+perev_cifr = {
+    '0': 'ноль', '1': 'один', '2': 'два', '3': 'три',
+    '4': 'четыре', '5': 'пять', '6': 'шесть',
+    '7': 'семь', '8': 'восемь', '9': 'девять'
+}
+
+# Список для хранения подходящих чисел
 nums = []
 file_name = "lab1.txt"
-perev_cifr = {'0': 'ноль', '1': 'один', '2': 'два', '3': 'три',
-              '4': 'четыре', '5': 'пять', '6': 'шесть',
-              '7': 'семь', '8': 'восемь', '9': 'девять'}
+
+# Проверка существования файла
 try:
-    open(file_name, "r")
-except:
+    with open(file_name, "r") as file:
+        for line in file:
+            line = line.strip()  # Убираем пробелы и символы новой строки
+            num = ""
+            # Проверяем, является ли строка числом
+            for char in line:
+                if char.isdigit():
+                    num += char
+                else:
+                    if checkNum(num):
+                        nums.append(num)
+                    num = ""  # Сброс числа при встрече нецифрового символа
+
+            # Проверяем последнее число в строке
+            if checkNum(num):
+                nums.append(num)
+
+except FileNotFoundError:
     print("Файл отсутствует!")
 
-with open(file_name, "r") as file:
-    while True:
-        line = file.readline().replace('\n', '')
-        if not (line): break
-        if (line.replace(" ", "")).isalpha() == False and (line.replace(" ", "")).isdigit() == False: continue
-        num = ""
-        if line.isdigit() and checkNum(line):
-            nums.append(line)
-        else:
-            for index in range(0, len(line)):
-                if line[index].isdigit():
-                    num += line[index]
-                if not (line[index].isdigit()) or index == (len(line) - 1):
-                    if checkNum(num): nums.append(num)
-                    num = ""
-for num in nums:
-    accept_char = []
-    accept_char.append(num[0])
-    for char in num:
-        if int(char) % 2 != 0:
-            accept_char.append(char)
-    print(f"Число {num}:", " - ".join(list(map(lambda x: perev_cifr[x], accept_char))))
+# Проверка, нашли ли мы подходящие числа
+if len(nums) == 0:
+    print("Файл не нашёл чисел, удовлетворяющих условию!")
+else:
+    # Вывод результатов
+    for num in nums:
+        accept_char = [num[0]]  # Первая цифра
+        accept_char.extend(char for char in num if int(char) % 2 != 0)  # Нечётные цифры
+        # Преобразуем цифры в слова и выводим
+        print(f"Число {num}:", " - ".join(perev_cifr[char] for char in accept_char))
