@@ -16,11 +16,6 @@ import timeit
 
 
 
-def dynamic_factorial(n):
-    # Динамично накапливаем последнее значение факториала
-    global last_factorial
-    last_factorial = n * last_factorial
-    return last_factorial
 
 def recursive_factorial(n):
     if n == 1:
@@ -54,7 +49,7 @@ def dynamic_F(n):
         global step
         # Оптимизируем знак, делаем так, чтобы знак умножался один раз
         step *= -1
-        last_F_value = step * (dynamic_F(n-1) - dynamic_G(n-2)) / dynamic_factorial(n+5)
+        last_F_value = step * (dynamic_F(n-1) - dynamic_G(n-2)) / iterative_factorial(n+5)
         return last_F_value
 
 # Время time.time
@@ -62,7 +57,6 @@ def score_time(func, n):
     return timeit.timeit(lambda: func(n), number=1000)
 
 # Переменные
-last_factorial = 1
 last_G_value = 1
 last_F_value = 1
 n = int(input("Введите число N:"))
