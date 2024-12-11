@@ -34,14 +34,16 @@ file_name = "lab1.txt"
 
 # Проверка существования файла
 try:
-    with open(file_name, "r") as file:
+    with open(file_name, "r", encoding='utf-8') as file:
         for line in file:
+            # print(line)
             line = line.strip()  # Убираем пробелы и символы новой строки
+            # print(line)
             num = ""
             # Проверяем, является ли строка числом
-            for char in line:
-                if char.isdigit():
-                    num += char
+            for char in range(len(line)):
+                if line[char].isdigit() and line[char-1] != "-":
+                    num += line[char]
                 else:
                     if checkNum(num):
                         nums.append(num)
@@ -59,6 +61,7 @@ if len(nums) == 0:
     print("Файл не нашёл чисел, удовлетворяющих условию!")
 else:
     # Вывод результатов
+    print("Для каждого числа через тире вывести прописью первую цифру и нечетные цифры")
     for num in nums:
         accept_char = [num[0]]  # Первая цифра
         accept_char.extend(char for char in num if int(char) % 2 != 0)  # Нечётные цифры
