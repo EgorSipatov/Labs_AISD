@@ -121,3 +121,55 @@ if det_A > summ_diagonal_elements:
     print("(A * A ** -1) - (K * F ** -1)")
     result = a_compose_reverse_a - k_compose_reverse_f # 5
     print(result)
+
+
+else:
+    # (AТ +G-FТ)*K
+    """
+    1) at
+    2) ft
+    3) at + g
+    4) at + g - ft
+    5) (at + g - ft) * k
+    """
+    print("A ** T")
+    transposed_a = np.transpose(a) # 1
+    print(transposed_a)
+    print("F ** T")
+    transposed_f = np.transpose(f) # 2
+    print(transposed_f)
+    print("A ** T + G")
+    at_plus_g = transposed_a + g # 3
+    print(at_plus_g)
+    print("A ** T + G - F ** T")
+    at_plus_g_minus_ft = at_plus_g - transposed_f # 4
+    print(at_plus_g_minus_ft)
+    print("(A ** T + G - F ** T) * K")
+    result = at_plus_g_minus_ft * K
+    print(result)
+
+# Графики (визуализация)
+# Создаем фигуру и подграфики
+fig, axs = plt.subplots(2, 2, figsize=(10, 10))
+
+# Линейный график
+axs[0, 0].plot(f.flatten())
+axs[0, 0].set_title('Линейный график')
+
+# Гистограмма
+axs[0, 1].hist(f.flatten(), bins=30)
+axs[0, 1].set_title('Гистограмма')
+
+# Точечный график
+rows = f.tolist()
+columns = np.array(f).T.tolist()
+axs[1, 0].scatter(rows, columns)
+axs[1, 0].set_title('Точечный график')
+
+# Тепловая карта
+cax = axs[1, 1].imshow(f, cmap='hot', interpolation='nearest')
+axs[1, 1].set_title('Тепловая карта')
+fig.colorbar(cax, ax=axs[1, 1])
+
+plt.tight_layout()
+plt.show()
