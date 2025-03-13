@@ -1,55 +1,78 @@
+"""
+Сипатов Егор ИСТбд-23
+Задание на л.р. №6
+Задание состоит из двух частей.
+1 часть – написать программу в соответствии со своим вариантом задания. Написать 2 варианта формирования (алгоритмический и с помощью функций Питона), сравнив по времени их выполнение.
+2 часть – усложнить написанную программу, введя по своему усмотрению в условие минимум одно ограничение
+на характеристики объектов (которое будет сокращать количество переборов)
+и целевую функцию для нахождения оптимального  решения.
+Вариант 23. Сформируйте разные варианты распределения Т предметов между К людьми.
+"""
 import time
-import itertools
+from itertools import product
 
-def is_valid_lexeme(lexeme, valid_start):
-    """
-    Проверка, начинается ли лексема с допустимой согласной буквы.
-    """
-    return lexeme[0] in valid_start
+def distribute_items_algorithmic(T, K):
+    if K == 0:
+        return [[]] if T == 0 else []
 
-def generate_lexemes_algorithmic(word):
-    """
-    Алгоритмическое формирование всех уникальных лексем из слова.
-    """
-    lexemes = set()
-    def permute(prefix, remaining):
-        if not remaining:
-            lexemes.add(prefix)
-        for i in range(len(remaining)):
-            permute(prefix + remaining[i], remaining[:i] + remaining[i+1:])
-    
-    permute("", word)
-    return lexemes
+    result = []
+    for i in range(T + 1):
+        for distribution in distribute_items_algorithmic(T - i, K - 1):
+            result.append([i] + distribution)
+    return result
 
-def generate_lexemes_python(word):
-    """
-    Формирование всех уникальных лексем из слова с использованием itertools.
-    """
-    return set(''.join(p) for p in itertools.permutations(word))
 
-def main():
-    word = "компьютер"
-    valid_start = "бвгджзйклмнпрстфхцчшщ"
+# Переменные
+T = int(input("Кол-во предметов (<= 10): "))  # Количество предметов
+K = int(input("Кол-во людей (<= 10): "))  # Количество людей
 
-    # Алгоритмическое формирование лексем
-    start_time = time.time()
-    algorithmic_lexemes = generate_lexemes_algorithmic(word)
-    algorithmic_lexemes = {lexeme for lexeme in algorithmic_lexemes if is_valid_lexeme(lexeme, valid_start)}
-    algorithmic_time = time.time() - start_time
+start_time = time.time()
+result_algorithmic = distribute_items_algorithmic(T, K)
+end_time = time.time()
 
-    # Формирование лексем с использованием функций Python
-    start_time = time.time()
-    python_lexemes = generate_lexemes_python(word)
-    python_lexemes = {lexeme for lexeme in python_lexemes if is_valid_lexeme(lexeme, valid_start)}
-    python_time = time.time() - start_time
+print("Алгоритмический подход:")
+print(result_algorithmic)
+print(f"Время выполнения: {end_time - start_time:.6f} секунд")
 
-    # Вывод результатов
-    print(f"Алгоритмический подход: {len(algorithmic_lexemes)} лексем, время выполнения: {algorithmic_time:.4f} секунд")
-    print(f"Функции Python: {len(python_lexemes)} лексем, время выполнения: {python_time:.4f} секунд")
 
-    # Пример лексем
-    print("\nПример лексем (алгоритмический подход):", list(algorithmic_lexemes)[:10])
-    print("Пример лексем (функции Python):", list(python_lexemes)[:10])
+def distribute_items_functional(T, K):
+    # Все возможные комбинации распределения предметов
+    return [distribution for distribution in product(range(T + 1), repeat=K) if sum(distribution) == T]
 
-if __name__ == "__main__":
-    main()
+start_time = time.time()
+result_functional = distribute_items_functional(T, K)
+end_time = time.time()
+
+print("Функциональный подход:")
+print(result_functional)
+print(f"Время выполнения: {end_time - start_time:.6f} секунд")
+print()
+print("Усложнённая часть")
+print("Ограничение: Пусть каждый человек может получить не более max_items предметов.")
+print("Целевая функция\nРавномерное распределение предметов между людьми, минимизируя разницу между максимальным и минимальным количеством предметов, полученных каждым человеком.")
+
+def distribute_items_with_constraints(T, K, max_items):
+    if K == 0:
+        return [[]] if T == 0 else []
+
+    result = []
+    for i in range(min(T, max_items) + 1):
+        for distribution in distribute_items_with_constraints(T - i, K - 1, max_items):
+            result.append([i] + distribution)
+    return result
+
+
+def optimal_distribution(T, K, max_items):
+    try:
+        distributions = distribute_items_with_constraints(T, K, max_items)
+        optimal = min(distributions, key=lambda x: max(x) - min(x))
+        print("Оптимальное распределение с ограничениями:")
+        return optimal
+    except:
+        return "Параметр max_items должен быть больше или равно, чем (кол-во людей / кол-во вещей) + 1"
+
+
+max_items = int(input("Max_items: ")) # Максимальное количество предметов для каждого человека
+optimal_result = optimal_distribution(T, K, max_items)
+
+print(optimal_result)
