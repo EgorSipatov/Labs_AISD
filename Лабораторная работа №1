@@ -1,35 +1,78 @@
-'''
-Вариант 23.
-Натуральные четные числа, начинающиеся с нечетной цифры и содержащие не более 3 нечетных цифр.
-Для каждого числа через тире вывести прописью первую цифру и нечетные цифры.
-'''
-#Словарь с цифрами
-dc_cifr = {'0': 'ноль', '1': 'один', '2': 'два', '3': 'три', '4': 'четыре', '5': 'пять', '6': 'шесть', '7': 'семь', '8': 'восемь', '9': 'девять'}
-#Нечетные цифры
-odd = '13579'
-#Баффер
-gived_num = '1'
-#Выбор файла
-file_name = "text.txt"
-try:
-    open(file_name, 'r')
-except:
-    print('Файл отсутствует в директории проекта')
-    exit()
+"""
+Сипатов Егор ИСТбд-23
+Задание на л.р. №6
+Задание состоит из двух частей.
+1 часть – написать программу в соответствии со своим вариантом задания. Написать 2 варианта формирования (алгоритмический и с помощью функций Питона), сравнив по времени их выполнение.
+2 часть – усложнить написанную программу, введя по своему усмотрению в условие минимум одно ограничение
+на характеристики объектов (которое будет сокращать количество переборов)
+и целевую функцию для нахождения оптимального  решения.
+Вариант 23. Сформируйте разные варианты распределения Т предметов между К людьми.
+"""
+import time
+from itertools import product
 
-k0 = False
-with open(file_name, 'r') as file:
-    while 1:
-        gived_num = file.readline().replace('\n', '')
-        if not gived_num:
-            #print('Файл закончился')
-            break
-        if not gived_num.isdigit():
-            continue
-        if (int(gived_num) % 2 == 0) and (gived_num[0] in odd) and (sum([gived_num.count('1'), gived_num.count('3'), gived_num.count('5'), gived_num.count('7'), gived_num.count('9')]) <= 3):
-            print(gived_num, end=' - ')
-            for i in gived_num:
-                if (i in odd): print(dc_cifr[i], end= ' ')
-            print()
+def distribute_items_algorithmic(T, K):
+    if K == 0:
+        return [[]] if T == 0 else []
+
+    result = []
+    for i in range(T + 1):
+        for distribution in distribute_items_algorithmic(T - i, K - 1):
+            result.append([i] + distribution)
+    return result
 
 
+# Переменные
+T = int(input("Кол-во предметов (<= 10): "))  # Количество предметов
+K = int(input("Кол-во людей (<= 10): "))  # Количество людей
+
+start_time = time.time()
+result_algorithmic = distribute_items_algorithmic(T, K)
+end_time = time.time()
+
+print("Алгоритмический подход:")
+print(result_algorithmic)
+print(f"Время выполнения: {end_time - start_time:.6f} секунд")
+
+
+def distribute_items_functional(T, K):
+    # Все возможные комбинации распределения предметов
+    return [distribution for distribution in product(range(T + 1), repeat=K) if sum(distribution) == T]
+
+start_time = time.time()
+result_functional = distribute_items_functional(T, K)
+end_time = time.time()
+
+print("Функциональный подход:")
+print(result_functional)
+print(f"Время выполнения: {end_time - start_time:.6f} секунд")
+print()
+print("Усложнённая часть")
+print("Ограничение: Пусть каждый человек может получить не более max_items предметов.")
+print("Целевая функция\nРавномерное распределение предметов между людьми, минимизируя разницу между максимальным и минимальным количеством предметов, полученных каждым человеком.")
+
+def distribute_items_with_constraints(T, K, max_items):
+    if K == 0:
+        return [[]] if T == 0 else []
+
+    result = []
+    for i in range(min(T, max_items) + 1):
+        for distribution in distribute_items_with_constraints(T - i, K - 1, max_items):
+            result.append([i] + distribution)
+    return result
+
+
+def optimal_distribution(T, K, max_items):
+    try:
+        distributions = distribute_items_with_constraints(T, K, max_items)
+        optimal = min(distributions, key=lambda x: max(x) - min(x))
+        print("Оптимальное распределение с ограничениями:")
+        return optimal
+    except:
+        return "Параметр max_items должен быть больше или равно, чем (кол-во людей / кол-во вещей) + 1"
+
+
+max_items = int(input("Max_items: ")) # Максимальное количество предметов для каждого человека
+optimal_result = optimal_distribution(T, K, max_items)
+
+print(optimal_result)
