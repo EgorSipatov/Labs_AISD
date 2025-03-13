@@ -1,87 +1,137 @@
-'''
-Лабораторная работа №5
-Задана рекуррентная функция. Область определения функции – натуральные числа.
-Написать программу сравнительного вычисления данной функции рекурсивно и итерационно.
-Определить границы применимости рекурсивного и итерационного подхода.
-Результаты сравнительного исследования времени вычисления представить в табличной
-и графической форме в виде отчета по лабораторной работе.
-Вариант 23. F(1) = 1;
-G(1) = 1;
-F(n) = (-1)n*(F(n–1) – G(n–2) /(n+5)!,
-G(n) = F(n–1) + 2*G(n–1), при n >=2
-'''
+# Задана рекуррентная функция. Область определения функции – натуральные числа.
+# Написать программу сравнительного вычисления данной функции рекурсивно и итерационно. Определить границы применимости рекурсивного и итерационного подхода.
+# Результаты сравнительного исследования времени вычисления представить в табличной и графической форме в виде отчета по лабораторной работе.
 
-import timeit
-# import matplotlib.pyplot as plt
+# Вариант 23
+# F(1) = 1;
+#G(1) = 1; F(n) = (-1)n*(F(n–1) – 2*G(n–1))/(2n)!, G(n) = F(n–1) , при n >=2
+import time
+import matplotlib.pyplot as plt
+from functools import lru_cache
+k = 1 # Ответ пользователя
+p = 1
 
+# Факториал для рекурсии
+def rec_factor(number):
+    if number == 1:
+        return 1
+    else:
+        return number * rec_factor(number-1)
 
-
-
-def recursive_factorial(n):
+# Нахождение F рекурсивно
+p = 1
+@lru_cache(maxsize=None)
+def F_rec(n):
     if n == 1:
         return 1
     else:
-        return n * recursive_factorial(n-1)
+        global p
+        p *= -1
+        return p * (F_rec(n-1) - 2*G_rec(n-1))/(rec_factor(2*n))
 
+# Нахождение G рекурсивно
+@lru_cache(maxsize=None)
+def G_rec(n):
+    if n == 1:
+        return 1
+    else:
+        return F_rec(n-1)
 
-def iterative_factorial(n):
-    result = 1
+# Факториал для итерации
+@lru_cache(maxsize=None)
+def it_factor(n):
+    s = 1
+    for i in range(2,n+1):
+        s *= i
+    return s
+
+# Нахождение F и G итерационно
+p = 1
+def F_iter(n):
+    F = [0]*(n+1)
+    F[1] = 1
+    G = [0]*(n+1)
+    G[1] = 1
+    global p
     for i in range(2, n+1):
-        result *= i
-    return result
+        F[i] = p * (F[i-1] - 2*G[i-1])//(it_factor(2*i))
+        G[i] = F[i-1]
+        p *= -1
+    return F[n], G[n]
 
+# Ввод числа N и S
+n = int(input('Введите натуральное число n, для функции: F(n < 2) = 100; F(n) = -(F(n - 1) + F(n - 5)): '))
+while n < 1:
+    n = int(input('Введите число n больше 0. Рассматривается только последовательность натуральных чисел: '))
 
-# G
-def dynamic_G(n):
-    global last_G_value, last_F_value
-    if n == 1:
-        return 1
-    else:
-        last_G_value = dynamic_F(n-1) + 2 * dynamic_G(n-1)
-        return last_G_value
+s = int(input('\nВведите натуральное число s, являющееся шагом в сравнительной таблице и графике: '))
+while s < 1:
+    s = int(input('Введите шаг графика >= 1: '))
 
-# F
-def dynamic_F(n):
-    global last_G_value, last_F_value
-    if n == 1:
-        return 1
-    else:
-        global step
-        # Оптимизируем знак, делаем так, чтобы знак умножался один раз
-        step *= -1
-        last_F_value = step * (dynamic_F(n-1) - dynamic_G(n-2)) / iterative_factorial(n+5)
-        return last_F_value
+# Cписки для нахождения времени
+timer=[]
+timer_rec=[]
+graf = list(range(1, n + 1,s))
 
-# Время time.time
-def score_time(func, n):
-    return timeit.timeit(lambda: func(n), number=1000)
+# Выбор выполнения программы
+o = int(input('\nДля какой функции вы хотите выполнить программу? '
+                  '( Рекурсивной = 0 | Итерационной = 1 | Для обеих = 2 ): '))
+while o != 0 and o != 1 and o != 2:
+    o = int(input('\nПринимаются только значения "0", "1" или "2": '))
 
-# Переменные
-last_G_value = 1
-last_F_value = 1
-n = int(input("Введите число N:"))
-n_values = range(2, n + 1)
-recursive_times = []
-iterative_times = []
-step = -1
+# Вычисление времени + Графики
+if (n >=  33 and (o == 0 or o == 2)) or (n >= 5000 and (o == 1 or o == 2)):
+    k = int(input('\nЧисло n слишком большое. Работа программы может занять существенное время.'
+                  ' Хотите получить результат? ( Да = 1 | Нет = 0 ): '))
+    while k != 0 and k != 1:
+        k = int(input('\nПринимаются только значения "1" или "0": '))
 
+if o == 0 and k == 1:
+    for i in graf:
+        start = time.time()
+        res = F_rec(i)
+        end = time.time()
+        timer.append(end-start)
+        rec_times = end - start
+        print('№',i,"Результат рекурсии = ",res,"\nВремя выполнения = ",end-start,"\n\n")
+    # Графики
+    plt.plot(graf, timer, label='Рекурсионная функция.')
+    plt.legend(loc=2)
 
-for n in n_values:
-    recursive_times.append(score_time(recursive_factorial, n))
-    iterative_times.append(score_time(iterative_factorial, n))
+if o == 1 and k == 1:
+    for i in graf:
+        start = time.time()
+        result = F_iter(i)
+        end = time.time()
+        timer.append(end - start)
+        iter_times = end - start
+        print('№',i,"Результат итерации = ",result,"\nВремя выполнения = ",end-start,"\n\n")
+    # Графики
+    plt.plot(graf, timer, label='Итерационная функция.')
+    plt.legend(loc=2)
 
+if o == 2 and k == 1:
+    for i in graf:
+        start = time.time()
+        result = F_iter(i)
+        end = time.time()
+        timer.append(end-start)
+        start_rec = time.time()
+        res = F_rec(i)
+        end_rec = time.time()
+        timer_rec.append(end_rec-start_rec)
+        rec_times = end_rec-start_rec
+        iter_times = end-start
+        print("\n",'№',i,"Результат рекурсии = ", res,"---------Результат итерации = ",result,"-----------Время  Рекурсии = ",end_rec-start_rec,"-------Время  Итерации = ",end-start)
+    # Графики
+    plt.plot(graf, timer, label='Итерационная функция.')
+    plt.plot(graf, timer_rec, label='Рекусионная функция.')
+    plt.legend(loc=2)
 
-# Табличка
-print(f"{'n':<10}{'Рекурсивное время (мс)':<25}{'Итерационное время (мс)':<25}")
-for i, n in enumerate(n_values):
-    print(f"{n:<10}{recursive_times[i]:<25}{iterative_times[i]:<25}")
+if k == 0:
+    print('\nРабота программы завершена.')
+    quit()
 
-"""# График
-plt.plot(n_values, recursive_times, label='Рекурсивно')
-plt.plot(n_values, iterative_times, label='Итерационно')
-plt.xlabel('n')
-plt.ylabel('Время (в миллисекундах)')
-plt.legend()
-plt.title('Сравнение времени вычисления функции F(n)')
+plt.xlabel('Значение n')
+plt.ylabel('Время выполнения (c)')
 plt.show()
-"""
